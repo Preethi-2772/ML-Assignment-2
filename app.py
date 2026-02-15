@@ -13,6 +13,10 @@ if file:
 
     data = pd.read_csv(file)
 
+    st.subheader("Uploaded Dataset Preview")
+    st.dataframe(data.head())
+
+    # Model selection
     model_name = st.selectbox(
         "Select Model",
         ["Logistic","Decision Tree","KNN","Naive Bayes","Random Forest","XGBoost"]
@@ -27,19 +31,41 @@ if file:
         "XGBoost":"model/xgb.pkl"
     }
 
+    # Load scaler & model
     scaler = joblib.load("model/scaler.pkl")
     model = joblib.load(model_files[model_name])
 
-    X_scaled = scaler.transform(data)
+    
+    if "target" in data.columns:
+        X = data.drop("target", axis=1)
+        y_true = data["target"]
+    else:
+        X = data.copy()
+        y_true = None
+
+    
+    feature_order = [
+        'age','sex','cp','trestbps','chol','fbs','restecg',
+        'thalach','exang','oldpeak','slope','ca','thal'
+    ]
+
+    try:
+        X = X[feature_order]
+    except:
+        st.error("Uploaded CSV does not match required feature format.")
+        st.stop()
+
+    
+    X_scaled = scaler.transform(X)
+
+    # Predictions
     preds = model.predict(X_scaled)
 
     st.subheader("Predictions")
     st.write(preds)
 
-    # If target column present
-    if "target" in data.columns:
-
-        y_true = data["target"]
+    # Confusion Matrix & Report (if target exists)
+    if y_true is not None:
 
         cm = confusion_matrix(y_true, preds)
 
