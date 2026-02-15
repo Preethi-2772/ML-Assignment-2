@@ -61,8 +61,8 @@ if file:
     # Predictions
     preds = model.predict(X_scaled)
 
-    st.subheader("Predictions")
-    st.write(preds)
+    # st.subheader("Predictions")
+    # st.write(preds)
 
     # Confusion Matrix & Report (if target exists)
     if y_true is not None:
